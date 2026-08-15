@@ -1,18 +1,12 @@
 package com.wakwau.xplore
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.wakwau.xplore.filemanager.ui.presentation.DualPaneViewModel
+import com.wakwau.xplore.filemanager.ui.screen.DualPaneFileManagerScreen
 
 @Composable
 fun XploreRoot() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "WKW Xplore")
-    }
+    val viewModel: DualPaneViewModel = viewModel()
+    DualPaneFileManagerScreen(viewModel = viewModel)
 }
