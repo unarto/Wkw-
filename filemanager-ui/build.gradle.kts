@@ -23,6 +23,7 @@ android {
 }
 
 dependencies {
+  implementation(project(":core"))
   implementation(project(":core-storage-api"))
   implementation(project(":filemanager"))
   implementation(project(":core-ui"))

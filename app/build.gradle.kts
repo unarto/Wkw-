@@ -71,6 +71,7 @@ dependencies {
   implementation(project(":core-storage"))
   implementation(project(":core-preferences"))
   implementation(project(":core-ui"))
+  implementation(project(":filemanager"))
   implementation(project(":filemanager-ui"))
   implementation(project(":treeview"))
 

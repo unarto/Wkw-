@@ -4,83 +4,62 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import com.wakwau.xplore.core.storage.model.FileItem
 import com.wakwau.xplore.core.storage.model.FileType
+import com.wakwau.xplore.core.storage.model.StorageLocation
 import com.wakwau.xplore.core.ui.theme.DarkBackground
-import com.wakwau.xplore.core.ui.theme.DarkBorder
-import com.wakwau.xplore.filemanager.ui.component.FileManagerBreadcrumb
-import com.wakwau.xplore.filemanager.ui.component.FileManagerStorageHeader
+import com.wakwau.xplore.filemanager.ui.component.ActivePanelContent
+import com.wakwau.xplore.filemanager.ui.component.PanelSwitcher
+import com.wakwau.xplore.filemanager.ui.component.SideActionBar
+import com.wakwau.xplore.filemanager.ui.event.DualPaneEvent
+import com.wakwau.xplore.filemanager.ui.navigation.PanelGestureNavigation
 import com.wakwau.xplore.filemanager.ui.state.DualPaneState
+import com.wakwau.xplore.filemanager.ui.state.PanelId
 
 @Composable
 fun FileManagerContent(
     state: DualPaneState,
-    onNavigate: (String) -> Unit,
+    onEvent: (DualPaneEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Split into Left and Right Panel placeholders for Phase 3A
-    Row(
+    val activePanel = if (state.activePanelId == PanelId.LEFT) state.leftPanel else state.rightPanel
+
+    Column(
         modifier = modifier
             .fillMaxSize()
             .background(DarkBackground)
     ) {
-        // Left Panel (Weight 1f)
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-        ) {
-            FileManagerStorageHeader(
-                location = state.leftPanel.currentLocation,
-                subFoldersCount = state.leftPanel.items.count { it.type == FileType.DIRECTORY },
-                subFilesCount = state.leftPanel.items.count { it.type == FileType.FILE }
-            )
-            FileManagerBreadcrumb(
-                location = state.leftPanel.currentLocation,
-                onNavigate = onNavigate
-            )
-            // Placeholder for FileList
-            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Left Panel Content Placeholder", color = Color.Gray)
-            }
-        }
-
-        // Divider
-        Box(
-            modifier = Modifier
-                .width(1.dp)
-                .fillMaxHeight()
-                .background(DarkBorder)
+        PanelSwitcher(
+            activePanelId = state.activePanelId,
+            onSelectPanel = { onEvent(DualPaneEvent.SetActivePanel(it)) }
         )
-
-        // Right Panel (Weight 1f)
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-        ) {
-            FileManagerStorageHeader(
-                location = state.rightPanel.currentLocation,
-                subFoldersCount = state.rightPanel.items.count { it.type == FileType.DIRECTORY },
-                subFilesCount = state.rightPanel.items.count { it.type == FileType.FILE }
-            )
-            FileManagerBreadcrumb(
-                location = state.rightPanel.currentLocation,
-                onNavigate = onNavigate
-            )
-            // Placeholder for FileList
-            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Right Panel Content Placeholder", color = Color.Gray)
+        Row(modifier = Modifier.weight(1f)) {
+            PanelGestureNavigation(
+                activePanelId = state.activePanelId,
+                onSwipePanel = { onEvent(DualPaneEvent.SetActivePanel(it)) },
+                modifier = Modifier.weight(1f)
+            ) {
+                ActivePanelContent(
+                    panel = activePanel,
+                    onNavigate = { onEvent(DualPaneEvent.OpenLocation(activePanel.id, it)) },
+                    onItemClick = { item ->
+                        if (item.type == FileType.DIRECTORY) {
+                            onEvent(DualPaneEvent.OpenLocation(activePanel.id, item.location))
+                        }
+                    },
+                    onItemLongClick = { item ->
+                        onEvent(DualPaneEvent.SelectItem(activePanel.id, item.id))
+                    },
+                    onItemCheckToggle = { item ->
+                        onEvent(DualPaneEvent.ToggleSelection(activePanel.id, item.id))
+                    },
+                    onRetry = { onEvent(DualPaneEvent.Refresh(activePanel.id)) }
+                )
             }
+            SideActionBar(onActionClick = { /* Handled via SideActionUiModel in next phase */ })
         }
     }
 }
